@@ -1,8 +1,5 @@
 package api.data;
 
-/**
- * Created by Lorenzo on 15/04/2015.
- */
 public class User {
 
 	private String email;
