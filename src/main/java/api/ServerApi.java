@@ -14,7 +14,7 @@ import java.sql.*;
 import static spark.Spark.*;
 
 /**
- * Created by Lorenzo on 15/04/2015.
+ * Created by Andrea on 15/04/2015.
  */
 public class ServerApi {
 	private static Gson gson;
@@ -24,14 +24,14 @@ public class ServerApi {
 		gson = new Gson();
 		port(8182);
 
-		put("/login","application/json", (request, response) -> {
+		put("/login", "application/json", (request, response) -> {
 			System.out.println(request.body());
 
 			User user = gson.fromJson(request.body(), User.class);
 
 			HttpStatus status = DAO.checkUser(user);
 
-			switch(status) {
+			switch (status) {
 				case SUCCESS:
 					response.status(200);
 					System.out.println("Client authorized");
@@ -59,6 +59,17 @@ public class ServerApi {
 			}
 
 		}, new JsonTransformer());
+
+		put("/newtravel", "application/json", (request, response)->{
+
+		
+
+
+
+			return null;
+		}, new JsonTransformer());
+
+
 
 		exception(IllegalArgumentException.class,(e, req, res) -> {
 			res.status(400);
