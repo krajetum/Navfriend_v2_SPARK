@@ -1,9 +1,6 @@
 package api;
 import api.dao.ServerDAO;
-import api.data.Coordinates;
-import api.data.ResTravel;
-import api.data.Travel;
-import api.data.User;
+import api.data.*;
 import api.util.HttpStatus;
 import api.util.JsonTransformer;
 import api.util.RequestSuccess;
@@ -64,19 +61,11 @@ public class ServerApi {
 
 		}, new JsonTransformer());
 
-		post("/newtravel", "application/json", (request, response) -> {
+		put("/newtravel", "application/json", (request, response) -> {
 
-			System.out.println(request.body().toString());
-			System.out.println(request.requestMethod());
+			TrasferTravel t = gson.fromJson(request.body(), TrasferTravel.class);
 
-			String usr = request.queryParams("user");
-			System.out.println(usr);
-			String descrizione = request.queryParams("descrizione");
-			System.out.println(descrizione);
-			Coordinates destinazione = gson.fromJson(request.queryParams("coordinates"), Coordinates.class);
-			System.out.println(destinazione.getLatitude()+","+destinazione.getLongitude());
-
-			Travel travel=new Travel(usr,descrizione,destinazione);
+			Travel travel = new Travel(t.getUser().getEmail(), t.getDescrizione(), t.getDestinazione());
 
 			ResTravel r = DAO.CreateTravel(travel);
 

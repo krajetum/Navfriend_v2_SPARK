@@ -92,7 +92,7 @@ public class ServerDAO {
             statement.setString(2,travel.getDescrizione());
             int exe = statement.executeUpdate();
 
-            if(exe!=0){
+            if(exe==0){
                 res=true;
             }
 
@@ -105,12 +105,7 @@ public class ServerDAO {
         else {
 
             try {
-                statement=connection.prepareStatement("SELECT email " +
-                        "FROM utente INNER JOIN amico AS utente.codice_utente=amico.codice_utente " +
-                        "WHERE utente.codice_utente=" +
-                        "SELECT codice_utente" +
-                        "FROM utente" +
-                        "WHERE email=?");
+                statement=connection.prepareStatement("SELECT email FROM utente INNER JOIN amico ON utente.codice_utente=amico.codice_utente WHERE utente.codice_utente=(SELECT codice_utente FROM utente WHERE email= ?)");
                 statement.setString(1,travel.getOwner());
 
                 ResultSet result = statement.executeQuery();

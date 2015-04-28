@@ -6,12 +6,12 @@ package api.data;
 public class TrasferTravel {
 
     private User user;
-    private Travel travel;
+    private Coordinates coordinates;
     private String descrizione;
 
-    public TrasferTravel(User user, Travel travel, String descrizione) {
+    public TrasferTravel(User user, Coordinates coordinates, String descrizione) {
         this.user = user;
-        this.travel = travel;
+        this.coordinates = coordinates;
         this.descrizione = descrizione;
     }
 
@@ -23,12 +23,12 @@ public class TrasferTravel {
         this.user = user;
     }
 
-    public Travel getTravel() {
-        return travel;
+    public Coordinates getDestinazione() {
+        return coordinates;
     }
 
-    public void setTravel(Travel travel) {
-        this.travel = travel;
+    public void setDestinazione(Coordinates travel) {
+        this.coordinates = travel;
     }
 
     public String getDescrizione() {
