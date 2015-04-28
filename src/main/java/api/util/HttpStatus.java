@@ -10,9 +10,8 @@ public enum HttpStatus {
     SERVER_ERROR (500);
 
     private int value;
+
     HttpStatus(int value){
         this.value = value;
     }
-
-
 }

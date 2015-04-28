@@ -1,5 +1,7 @@
 package api.dao;
 
+import api.data.ResTravel;
+import api.data.Travel;
 import api.data.User;
 import api.util.HttpStatus;
 
@@ -11,7 +13,7 @@ import java.sql.*;
 public class ServerDAO {
 
 
-    private static String database = "jdbc:mysql://192.168.201.118:3306/navfriend";
+    private static String database = "jdbc:mysql://192.168.201.111:3306/navfriend";
     private static String username = "navfriend";
     private static String password = "navfriend";
 //    private Connection connection;
@@ -78,7 +80,49 @@ public class ServerDAO {
         return HttpStatus.SERVER_ERROR;
     }
 
+    public ResTravel CreateTravel(Travel travel){
+        Connection connection  = null;
+        PreparedStatement statement = null;
+        boolean res=false;
 
+        try {
+            connection = DriverManager.getConnection(database, username, password);
+            statement = connection.prepareStatement("INSERT INTO viaggio (destinazione,descrizione) VALUES (?,?)");
+            statement.setString(1,travel.getDestinazione().getLatitude()+","+travel.getDestinazione().getLongitude());
+            statement.setString(2,travel.getDescrizione());
+            int exe = statement.executeUpdate();
 
+            if(exe!=0){
+                res=true;
+            }
 
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        if(res)
+            return new ResTravel(HttpStatus.SERVER_ERROR,null);
+        else {
+
+            try {
+                statement=connection.prepareStatement("SELECT email " +
+                        "FROM utente INNER JOIN amico AS utente.codice_utente=amico.codice_utente " +
+                        "WHERE utente.codice_utente=" +
+                        "SELECT codice_utente" +
+                        "FROM utente" +
+                        "WHERE email=?");
+                statement.setString(1,travel.getOwner());
+
+                ResultSet result = statement.executeQuery();
+                while(result.next()){
+                    travel.addUser(new User(result.getString(1),null));
+                }
+
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+
+            return new ResTravel(HttpStatus.SUCCESS,travel);
+        }
+    }
 }

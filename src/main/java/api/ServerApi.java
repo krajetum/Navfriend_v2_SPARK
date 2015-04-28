@@ -1,5 +1,8 @@
 package api;
 import api.dao.ServerDAO;
+import api.data.Coordinates;
+import api.data.ResTravel;
+import api.data.Travel;
 import api.data.User;
 import api.util.HttpStatus;
 import api.util.JsonTransformer;
@@ -19,6 +22,7 @@ import static spark.Spark.*;
 public class ServerApi {
 	private static Gson gson;
 	private static ServerDAO DAO;
+
 	public static void main(String[] args) {
 		DAO = new ServerDAO();
 		gson = new Gson();
@@ -60,11 +64,33 @@ public class ServerApi {
 
 		}, new JsonTransformer());
 
-		put("/newtravel", "application/json", (request, response)->{
+		post("/newtravel", "application/json", (request, response) -> {
 
-		
+			System.out.println(request.body().toString());
+			System.out.println(request.requestMethod());
 
+			String usr = request.queryParams("user");
+			System.out.println(usr);
+			String descrizione = request.queryParams("descrizione");
+			System.out.println(descrizione);
+			Coordinates destinazione = gson.fromJson(request.queryParams("coordinates"), Coordinates.class);
+			System.out.println(destinazione.getLatitude()+","+destinazione.getLongitude());
 
+			Travel travel=new Travel(usr,descrizione,destinazione);
+
+			ResTravel r = DAO.CreateTravel(travel);
+
+			switch (r.getStatus()) {
+
+				case SUCCESS:
+					System.out.println("Creazione viaggio eseguita con successo! ");
+					return travel;
+
+				case SERVER_ERROR:
+					System.out.println("Errore nella creazione del viaggio :(");
+					return travel;
+
+			}
 
 			return null;
 		}, new JsonTransformer());
