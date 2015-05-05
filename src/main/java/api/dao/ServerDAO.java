@@ -107,7 +107,7 @@ public class ServerDAO {
         else {
 
             try {
-                statement=connection.prepareStatement("SELECT viaggio.codice_viaggio from viaggio,utente where viaggio.proprietario=utente.email and proprietario=?  order by data");
+                statement=connection.prepareStatement("SELECT viaggio.codice_viaggio from viaggio,utente where viaggio.proprietario=utente.email and proprietario=?  order by data desc");
                 statement.setString(1,travel.getUser().getEmail());
                 ResultSet result = statement.executeQuery();
                 result.next();
@@ -138,9 +138,15 @@ public class ServerDAO {
         try {
             connection = DriverManager.getConnection(database, username, password);
             statement = connection.prepareStatement("update utente set codice_viaggio=? where email=?");
+            System.out.println("ID: "+userTravel.getTravel().getID()+"\n");
             statement.setInt(1, userTravel.getTravel().getID());
+            System.out.println("EMAIL: " + userTravel.getTravel().getOwner() + "\n\n\n");
             statement.setString(2, userTravel.getTravel().getOwner());
             statement.executeUpdate();
+
+            for(int i=0;i<userTravel.getTravel().getGuest().size();i++){
+                System.out.println(userTravel.getTravel().getGuest().get(i)+"\n");
+            }
 
             for (int i = 0; i < utenti.size(); i++){
                 statement = connection.prepareStatement("update utente set codice_viaggio=? where email=?");
