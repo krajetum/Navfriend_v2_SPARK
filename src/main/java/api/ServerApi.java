@@ -65,26 +65,36 @@ public class ServerApi {
 
 			TrasferTravel t = gson.fromJson(request.body(), TrasferTravel.class);
 
-			Travel travel = new Travel(t.getUser().getEmail(), t.getDescrizione(), t.getDestinazione());
-
-			ResTravel r = DAO.CreateTravel(travel);
+			ResTravel r = DAO.CreateTravel(t);
 
 			switch (r.getStatus()) {
 
 				case SUCCESS:
 					System.out.println("Creazione viaggio eseguita con successo! ");
-					return travel;
+					return r.getTravel();
 
 				case SERVER_ERROR:
 					System.out.println("Errore nella creazione del viaggio :(");
-					return travel;
-
+					return r.getTravel();
 			}
 
 			return null;
 		}, new JsonTransformer());
 
+		put("/adduser","application/json", (request, response) ->{
+			UserTravel usrtravel = gson.fromJson(request.body(), UserTravel.class);
+			HttpStatus status=DAO.AddUsers(usrtravel);
 
+			switch (status){
+				case SUCCESS:
+					return new RequestSuccess(true,"Utenti aggiunti con successo");
+
+				case SERVER_ERROR:
+					return new RequestSuccess(false,"Errore di aggiunta");
+			}
+
+			return null;
+		}, new JsonTransformer());
 
 		exception(IllegalArgumentException.class,(e, req, res) -> {
 			res.status(400);

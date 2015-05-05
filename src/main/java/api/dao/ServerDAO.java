@@ -1,11 +1,10 @@
 package api.dao;
 
-import api.data.ResTravel;
-import api.data.Travel;
-import api.data.User;
+import api.data.*;
 import api.util.HttpStatus;
 
 import java.sql.*;
+import java.util.List;
 
 /**
  * Created by Dev on 21/04/2015.
@@ -13,7 +12,7 @@ import java.sql.*;
 public class ServerDAO {
 
 
-    private static String database = "jdbc:mysql://192.168.201.111:3306/navfriend";
+    private static String database = "jdbc:mysql://localhost:3306/navfriend";
     private static String username = "navfriend";
     private static String password = "navfriend";
 //    private Connection connection;
@@ -80,16 +79,19 @@ public class ServerDAO {
         return HttpStatus.SERVER_ERROR;
     }
 
-    public ResTravel CreateTravel(Travel travel){
+    public ResTravel CreateTravel(TrasferTravel travel){
         Connection connection  = null;
+        System.out.println(travel.getUser().getEmail()+","+travel.getDescrizione()+","+travel.getDestinazione());
+        Travel t=new Travel(travel.getUser().getEmail(),travel.getDescrizione(),travel.getDestinazione());
         PreparedStatement statement = null;
         boolean res=false;
 
         try {
             connection = DriverManager.getConnection(database, username, password);
-            statement = connection.prepareStatement("INSERT INTO viaggio (destinazione,descrizione) VALUES (?,?)");
+            statement = connection.prepareStatement("INSERT INTO viaggio (destinazione,descrizione,proprietario) VALUES (?,?,?)");
             statement.setString(1,travel.getDestinazione().getLatitude()+","+travel.getDestinazione().getLongitude());
             statement.setString(2,travel.getDescrizione());
+            statement.setString(3,travel.getUser().getEmail());
             int exe = statement.executeUpdate();
 
             if(exe==0){
@@ -105,19 +107,53 @@ public class ServerDAO {
         else {
 
             try {
-                statement=connection.prepareStatement("SELECT email FROM utente INNER JOIN amico ON utente.codice_utente=amico.codice_utente WHERE utente.codice_utente=(SELECT codice_utente FROM utente WHERE email= ?)");
-                statement.setString(1,travel.getOwner());
-
+                statement=connection.prepareStatement("SELECT viaggio.codice_viaggio from viaggio,utente where viaggio.proprietario=utente.email and proprietario=?  order by data");
+                statement.setString(1,travel.getUser().getEmail());
                 ResultSet result = statement.executeQuery();
+                result.next();
+                t.setID(result.getInt("codice_viaggio"));
+
+                statement=connection.prepareStatement("SELECT email FROM utente WHERE  codice_utente in (SELECT codice_amico FROM utente,amico WHERE utente.codice_utente=amico.codice_utente and email=?)");
+                statement.setString(1, travel.getUser().getEmail());
+
+                result = statement.executeQuery();
                 while(result.next()){
-                    travel.addUser(new User(result.getString(1),null));
+                    System.out.println(result.getString("email"));
+                    t.addUser(result.getString("email"), "");
                 }
 
             } catch (SQLException e) {
                 e.printStackTrace();
             }
 
-            return new ResTravel(HttpStatus.SUCCESS,travel);
+            return new ResTravel(HttpStatus.SUCCESS,t);
         }
+    }
+    public HttpStatus AddUsers(UserTravel userTravel){
+        Connection connection  = null;
+        PreparedStatement statement = null;
+        List<User> utenti=userTravel.getTravel().getGuest();
+
+
+        try {
+            connection = DriverManager.getConnection(database, username, password);
+            statement = connection.prepareStatement("update utente set codice_viaggio=? where email=?");
+            statement.setInt(1, userTravel.getTravel().getID());
+            statement.setString(2, userTravel.getTravel().getOwner());
+            statement.executeUpdate();
+
+            for (int i = 0; i < utenti.size(); i++){
+                statement = connection.prepareStatement("update utente set codice_viaggio=? where email=?");
+                statement.setInt(1, userTravel.getTravel().getID());
+                statement.setString(2, utenti.get(i).getEmail());
+                statement.executeUpdate();
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return HttpStatus.SERVER_ERROR;
+        }
+
+        return HttpStatus.SUCCESS;
     }
 }

@@ -1,7 +1,7 @@
 package api.data;
 
 
-import java.util.List;
+import java.util.*;
 
 /**
  * Created by Dev on 28/04/2015.
@@ -11,6 +11,15 @@ public class Travel {
     private String owner;
     private String descrizione;
     private Coordinates destinazione;
+
+    public List<User> getGuest() {
+        return guest;
+    }
+
+    public void setGuest(List<User> guest) {
+        this.guest = guest;
+    }
+
     private List<User> guest;
 
     public String getOwner() {
@@ -46,21 +55,18 @@ public class Travel {
     }
 
     public Travel(String owner, String descrizione, Coordinates destinazione){
+        guest = new ArrayList<User>();
         this.owner = owner;
         this.descrizione = descrizione;
         this.destinazione = destinazione;
     }
 
     public Travel(String owner, Coordinates destinazione){
+        guest = new ArrayList<User>();
         this.owner = owner;
         this.destinazione = destinazione;
     }
-    public boolean addUser(User user){
-        if(guest.contains(user)) {
-            return false;
-        }else{
-            guest.add(user);
-            return true;
-        }
+    public void addUser(String user,String pwd){
+        guest.add(new User(user,pwd));
     }
 }
