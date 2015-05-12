@@ -4,6 +4,7 @@ import api.data.*;
 import api.util.HttpStatus;
 
 import java.sql.*;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -161,5 +162,66 @@ public class ServerDAO {
         }
 
         return HttpStatus.SUCCESS;
+    }
+
+    public HttpStatus insertPosition(Coordinates point,Travel travel,User user){
+        Connection connection=null;
+        PreparedStatement statement=null;
+        String cod_usr="";
+
+        try {
+            connection=DriverManager.getConnection(database,username,password);
+            statement = connection.prepareStatement("SELECT codice_utente FROM utente where email=?");
+            statement.setString(1,user.getEmail());
+            ResultSet res=statement.executeQuery();
+            res.next();
+            cod_usr = res.getString(1);
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.out.println("errore nella ricerca del codice_utente");
+            return HttpStatus.SERVER_ERROR;
+        }
+
+        try {
+            connection = DriverManager.getConnection(database, username, password);
+            statement=connection.prepareStatement("INSERT INTO posizione (longitudine,latitudine,codice_viaggio,codice_utente) VALUES(?,?,?,?)");
+            statement.setFloat(1,point.getLongitude());
+            statement.setFloat(2,point.getLatitude());
+            statement.setInt(3, travel.getID());
+            statement.setString(4,cod_usr);
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.out.println("errore nell'inserimeto");
+            return HttpStatus.SERVER_ERROR;
+        }
+        return HttpStatus.SUCCESS;
+    }
+
+    public List<trasferCoordinates> getCoordinates(Travel travel){
+        Connection connection=null;
+        PreparedStatement statement=null;
+        List<trasferCoordinates> usersPos=null;
+
+        try {
+            connection = DriverManager.getConnection(database, username, password);
+            statement = connection.prepareStatement("SELECT email,latitudine,longitudine\n" +
+                    " FROM utente,viaggio,ultimaposizione p\n" +
+                    " WHERE utente.codice_viaggio=viaggio.codice_viaggio AND p.codice_utente=utente.codice_utente AND viaggio.codice_viaggio=p.codice_viaggio AND p.codice_viaggio=?");
+            statement.setInt(1,travel.getID());
+            ResultSet res= statement.executeQuery();
+
+            usersPos=new ArrayList<trasferCoordinates>();
+
+            while(res.next()) {
+                usersPos.add(new trasferCoordinates(new Coordinates(res.getFloat(2), res.getFloat(3)), new User(res.getString(1), null), null));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.out.println("errore nel prendere le posizioni degli utenti del viaggio");
+            return null;
+        }
+        return usersPos;
     }
 }

@@ -81,25 +81,41 @@ public class ServerApi {
 			return null;
 		}, new JsonTransformer());
 
-		put("/adduser","application/json", (request, response) ->{
+		put("/adduser", "application/json", (request, response) -> {
 			UserTravel usrtravel = gson.fromJson(request.body(), UserTravel.class);
-			HttpStatus status=DAO.AddUsers(usrtravel);
+			HttpStatus status = DAO.AddUsers(usrtravel);
 
-			switch (status){
+			switch (status) {
 				case SUCCESS:
-					return new RequestSuccess(true,"Utenti aggiunti con successo");
+					return new RequestSuccess(true, "Utenti aggiunti con successo");
 
 				case SERVER_ERROR:
-					return new RequestSuccess(false,"Errore di aggiunta");
+					return new RequestSuccess(false, "Errore di aggiunta");
 			}
 
 			return null;
 		}, new JsonTransformer());
 
-		exception(IllegalArgumentException.class,(e, req, res) -> {
+		exception(IllegalArgumentException.class, (e, req, res) -> {
 			res.status(400);
 			res.body(gson.toJson(e));
 		});
-	}
 
+		put("/getposition", "application/json", (request, response) -> {
+
+			System.out.println(">>>>>>>>>>>" + request.body());
+
+			trasferCoordinates position=gson.fromJson(request.body(), trasferCoordinates.class);
+
+			switch (DAO.insertPosition(position.getPosition(),position.getTravel(),position.getUser())) {
+			case SUCCESS:
+				System.out.println("Inserimeto posizione eseguita con successo");
+				return DAO.getCoordinates(position.getTravel());
+			default:
+				System.out.println("Errore inserimento posizione");
+				return null;
+			}
+		}, new JsonTransformer());
+	}
 }
+
