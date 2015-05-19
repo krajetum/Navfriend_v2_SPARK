@@ -26,8 +26,6 @@ public class ServerApi {
 		port(8182);
 
 		put("/login", "application/json", (request, response) -> {
-			System.out.println(request.body());
-
 			User user = gson.fromJson(request.body(), User.class);
 
 			HttpStatus status = DAO.checkUser(user);
@@ -35,7 +33,7 @@ public class ServerApi {
 			switch (status) {
 				case SUCCESS:
 					response.status(200);
-					System.out.println("Client authorized");
+					System.out.println("Client authorized: "+user.getEmail());
 
 					return new RequestSuccess(true, "Autorizzato");
 
@@ -105,16 +103,34 @@ public class ServerApi {
 
 			System.out.println(">>>>>>>>>>>" + request.body());
 
-			trasferCoordinates position=gson.fromJson(request.body(), trasferCoordinates.class);
+			trasferCoordinates position = gson.fromJson(request.body(), trasferCoordinates.class);
 
-			switch (DAO.insertPosition(position.getPosition(),position.getTravel(),position.getUser())) {
-			case SUCCESS:
-				System.out.println("Inserimeto posizione eseguita con successo");
-				return DAO.getCoordinates(position.getTravel());
-			default:
-				System.out.println("Errore inserimento posizione");
-				return null;
+			switch (DAO.insertPosition(position.getPosition(), position.getTravel(), position.getUser())) {
+				case SUCCESS:
+					System.out.println("Inserimeto posizione eseguita con successo");
+					return DAO.getCoordinates(position.getTravel());
+				default:
+					System.out.println("Errore inserimento posizione");
+					return null;
 			}
+		}, new JsonTransformer());
+
+		put("/gettravelforuser", "application/json", (request, response) -> {
+
+			User user = gson.fromJson(request.body(), User.class);
+			return DAO.getTravelForUser(user);
+
+		}, new JsonTransformer());
+		put("/terminatetravel", "application/json", (request, response) -> {
+
+			User user = gson.fromJson(request.body(), User.class);
+			switch (DAO.TerminateTravel(user)){
+				case SUCCESS:
+					return new RequestSuccess(true,"eliminazione viaggio eseguita correttamente");
+				default:
+					return new RequestSuccess(false,"errore nell'eliminazione viaggio");
+			}
+
 		}, new JsonTransformer());
 	}
 }

@@ -11,9 +11,13 @@ public class Travel {
     private String owner;
     private String descrizione;
     private Coordinates destinazione;
-
     public List<User> getGuest() {
         return guest;
+    }
+
+    public Travel(int ID, String descrizione) {
+        this.ID = ID;
+        this.descrizione = descrizione;
     }
 
     public void setGuest(List<User> guest) {
@@ -59,6 +63,8 @@ public class Travel {
         this.owner = owner;
         this.descrizione = descrizione;
         this.destinazione = destinazione;
+    }
+    public Travel() {
     }
 
     public Travel(String owner, Coordinates destinazione){

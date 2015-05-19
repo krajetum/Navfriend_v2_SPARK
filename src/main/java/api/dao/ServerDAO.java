@@ -82,7 +82,6 @@ public class ServerDAO {
 
     public ResTravel CreateTravel(TrasferTravel travel){
         Connection connection  = null;
-        System.out.println(travel.getUser().getEmail()+","+travel.getDescrizione()+","+travel.getDestinazione());
         Travel t=new Travel(travel.getUser().getEmail(),travel.getDescrizione(),travel.getDestinazione());
         PreparedStatement statement = null;
         boolean res=false;
@@ -119,7 +118,6 @@ public class ServerDAO {
 
                 result = statement.executeQuery();
                 while(result.next()){
-                    System.out.println(result.getString("email"));
                     t.addUser(result.getString("email"), "");
                 }
 
@@ -139,15 +137,11 @@ public class ServerDAO {
         try {
             connection = DriverManager.getConnection(database, username, password);
             statement = connection.prepareStatement("update utente set codice_viaggio=? where email=?");
-            System.out.println("ID: "+userTravel.getTravel().getID()+"\n");
+            System.out.println("ID VIAGGIO: "+userTravel.getTravel().getID());
             statement.setInt(1, userTravel.getTravel().getID());
-            System.out.println("EMAIL: " + userTravel.getTravel().getOwner() + "\n\n\n");
+            System.out.println("EMAIL UTENTE PROPRIETARIO: " + userTravel.getTravel().getOwner());
             statement.setString(2, userTravel.getTravel().getOwner());
             statement.executeUpdate();
-
-            for(int i=0;i<userTravel.getTravel().getGuest().size();i++){
-                System.out.println(userTravel.getTravel().getGuest().get(i)+"\n");
-            }
 
             for (int i = 0; i < utenti.size(); i++){
                 statement = connection.prepareStatement("update utente set codice_viaggio=? where email=?");
@@ -198,6 +192,39 @@ public class ServerDAO {
         }
         return HttpStatus.SUCCESS;
     }
+    public Travel getTravelForUser(User user){
+        Connection connection=null;
+        PreparedStatement statement=null;
+        Travel t=null;
+
+        try {
+            connection = DriverManager.getConnection(database, username, password);
+            statement=connection.prepareStatement("SELECT viaggio.codice_viaggio,viaggio.descrizione,viaggio.proprietario,viaggio.destinazione FROM viaggio,utente WHERE viaggio.codice_viaggio=utente.codice_viaggio AND utente.email=?");
+            statement.setString(1,user.getEmail());
+
+            ResultSet s=statement.executeQuery();
+            if(s.next()){
+                if(s.getInt("codice_viaggio")>0){
+                    t=new Travel();
+                    t.setID(s.getInt("codice_viaggio"));
+                    t.setDescrizione(s.getString("descrizione"));
+                    t.setOwner(s.getString("proprietario"));
+                    t.setDestinazione(new Coordinates(s.getString("destinazione")));
+                }
+                else{
+                    t=null;
+                }
+
+            }
+
+        }catch(SQLException e){
+            e.printStackTrace();
+            System.out.println("errore nella ricerca del viaggio per l'utente");
+            return null;
+        }
+
+        return t;
+    }
 
     public List<trasferCoordinates> getCoordinates(Travel travel){
         Connection connection=null;
@@ -223,5 +250,21 @@ public class ServerDAO {
             return null;
         }
         return usersPos;
+    }
+
+    public HttpStatus TerminateTravel(User user) {
+        Connection connection=null;
+        PreparedStatement statement=null;
+        List<trasferCoordinates> usersPos=null;
+
+        try {
+            connection=DriverManager.getConnection(database, username, password);
+            statement=connection.prepareStatement("UPDATE utente SET codice_viaggio=null WHERE email=?");
+            statement.setString(1,user.getEmail());
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return HttpStatus.SERVER_ERROR;
+        }
+        return HttpStatus.SUCCESS;
     }
 }

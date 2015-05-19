@@ -1,5 +1,7 @@
 package api.data;
 
+import java.util.StringTokenizer;
+
 /**
  * Created by Dev on 28/04/2015.
  */
@@ -29,4 +31,9 @@ public class Coordinates {
         this.latitude = latitude;
     }
 
+    public Coordinates(String coordinates){
+        StringTokenizer s=new StringTokenizer(coordinates,",");
+        latitude=Float.parseFloat(s.nextToken());
+        longitude=Float.parseFloat(s.nextToken());
+    }
 }
