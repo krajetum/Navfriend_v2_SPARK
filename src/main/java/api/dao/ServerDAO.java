@@ -226,17 +226,21 @@ public class ServerDAO {
         return t;
     }
 
-    public List<trasferCoordinates> getCoordinates(Travel travel){
-        Connection connection=null;
+    public List<trasferCoordinates> getCoordinates(Travel travel, User usr){
+        //aggiunto parametro user per inviare tutte le posizioni tranne quella di chi lo ha richiesto
+	Connection connection=null;
         PreparedStatement statement=null;
         List<trasferCoordinates> usersPos=null;
 
         try {
             connection = DriverManager.getConnection(database, username, password);
+	    //modificata query. aggiunto "utente.email<>?""
             statement = connection.prepareStatement("SELECT email,latitudine,longitudine\n" +
                     " FROM utente,viaggio,ultimaposizione p\n" +
-                    " WHERE utente.codice_viaggio=viaggio.codice_viaggio AND p.codice_utente=utente.codice_utente AND viaggio.codice_viaggio=p.codice_viaggio AND p.codice_viaggio=?");
-            statement.setInt(1,travel.getID());
+                    " WHERE utente.codice_viaggio=viaggio.codice_viaggio AND p.codice_utente=utente.codice_utente AND viaggio.codice_viaggio=p.codice_viaggio AND utente.email<>? AND p.codice_viaggio=?");
+	    //settaggio indirizzo email nello statement
+	    statement.setString(1,usr.getEmain())
+            statement.setInt(2,travel.getID());
             ResultSet res= statement.executeQuery();
 
             usersPos=new ArrayList<trasferCoordinates>();
