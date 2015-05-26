@@ -220,26 +220,27 @@ public class ServerDAO {
 
     public List<trasferCoordinates> getCoordinates(Travel travel, User usr){
         //aggiunto parametro user per inviare tutte le posizioni tranne quella di chi lo ha richiesto
-        Connection connection=null;
-        PreparedStatement statement=null;
         List<trasferCoordinates> usersPos=null;
 
-        try {
-            connection = DriverManager.getConnection(database, username, password);
-            //modificata query. aggiunto "utente.email<>?""
-            statement = connection.prepareStatement("SELECT email,latitudine,longitudine\n" +
-                    " FROM utente,viaggio,ultimaposizione p\n" +
-                    " WHERE utente.codice_viaggio=viaggio.codice_viaggio AND p.codice_utente=utente.codice_utente AND viaggio.codice_viaggio=p.codice_viaggio AND utente.email<>? AND p.codice_viaggio=?");
+        //modificata query. aggiunto "utente.email<>?""
+        String sql = "SELECT email,latitudine,longitudine\n" +
+                " FROM utente,viaggio,ultimaposizione p\n" +
+                " WHERE utente.codice_viaggio=viaggio.codice_viaggio AND p.codice_utente=utente.codice_utente AND viaggio.codice_viaggio=p.codice_viaggio AND utente.email<>? AND p.codice_viaggio=?";
+
+        try (Connection connection = newConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+
             //settaggio indirizzo email nello statement
-            statement.setString(1,usr.getEmain())
-            statement.setInt(2,travel.getID());
-            ResultSet res= statement.executeQuery();
+            statement.setString(1, usr.getEmail());
+            statement.setInt(2, travel.getID());
+            try (ResultSet res = statement.executeQuery()) {
+                usersPos = new ArrayList<>();
 
-            usersPos=new ArrayList<trasferCoordinates>();
-
-            while(res.next()) {
-                usersPos.add(new trasferCoordinates(new Coordinates(res.getFloat(2), res.getFloat(3)), new User(res.getString(1), null), null));
+                while (res.next()) {
+                    usersPos.add(new trasferCoordinates(new Coordinates(res.getFloat(2), res.getFloat(3)), new User(res.getString(1), null), null));
+                }
             }
+
         } catch (SQLException e) {
             e.printStackTrace();
             System.out.println("errore nel prendere le posizioni degli utenti del viaggio");
