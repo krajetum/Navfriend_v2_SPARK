@@ -1,15 +1,17 @@
 package api;
+
 import api.dao.ServerDAO;
-import api.data.*;
+import api.data.ResTravel;
+import api.data.TrasferTravel;
+import api.data.User;
+import api.data.UserTravel;
+import api.data.trasferCoordinates;
 import api.util.HttpStatus;
 import api.util.JsonTransformer;
 import api.util.RequestSuccess;
 import com.google.gson.Gson;
-import spark.Request;
-import spark.Response;
-import spark.Route;
 
-import java.sql.*;
+import java.io.IOException;
 
 import static spark.Spark.*;
 
@@ -19,11 +21,18 @@ import static spark.Spark.*;
 public class ServerApi {
 	private static Gson gson;
 	private static ServerDAO DAO;
+	private static ServerConfiguration configuration;
 
 	public static void main(String[] args) {
+		try {
+			configuration = new ServerConfiguration();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
 		DAO = new ServerDAO();
 		gson = new Gson();
-		port(8182);
+		port(configuration.getPort());
 
 		put("/login", "application/json", (request, response) -> {
 			User user = gson.fromJson(request.body(), User.class);
@@ -63,7 +72,7 @@ public class ServerApi {
 
 			TrasferTravel t = gson.fromJson(request.body(), TrasferTravel.class);
 
-			ResTravel r = DAO.CreateTravel(t);
+			ResTravel r = DAO.createTravel(t);
 
 			switch (r.getStatus()) {
 
@@ -81,7 +90,7 @@ public class ServerApi {
 
 		put("/adduser", "application/json", (request, response) -> {
 			UserTravel usrtravel = gson.fromJson(request.body(), UserTravel.class);
-			HttpStatus status = DAO.AddUsers(usrtravel);
+			HttpStatus status = DAO.addUsers(usrtravel);
 
 			switch (status) {
 				case SUCCESS:
@@ -132,6 +141,10 @@ public class ServerApi {
 			}
 
 		}, new JsonTransformer());
+	}
+
+	public static ServerConfiguration getConfiguration() {
+		return configuration;
 	}
 }
 
