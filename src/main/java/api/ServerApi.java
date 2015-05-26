@@ -117,7 +117,7 @@ public class ServerApi {
 			switch (DAO.insertPosition(position.getPosition(), position.getTravel(), position.getUser())) {
 				case SUCCESS:
 					System.out.println("Inserimeto posizione eseguita con successo");
-					return DAO.getCoordinates(position.getTravel());
+					return DAO.getCoordinates(position.getTravel(), position.getUser());
 				default:
 					System.out.println("Errore inserimento posizione");
 					return null;
