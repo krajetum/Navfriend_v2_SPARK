@@ -74,7 +74,7 @@ public class ServerDAO {
         Travel t = new Travel(travel.getUser().getEmail(), travel.getDescrizione(), travel.getDestinazione());
         boolean res = false;
 
-        String sql = "INSERT INTO viaggio (destinazione,descrizione,proprietario) VALUES (?,?,?)";
+        String sql = "INSERT INTO viaggio (destinazione,descrizione,proprietario, data) VALUES (?,?,?, CURRENT_TIMESTAMP)";
 
         try (Connection connection = newConnection();
             PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -168,7 +168,7 @@ public class ServerDAO {
             return HttpStatus.SERVER_ERROR;
         }
 
-        sql = "INSERT INTO posizione (longitudine,latitudine,codice_viaggio,codice_utente) VALUES(?,?,?,?)";
+        sql = "INSERT INTO posizione (longitudine,latitudine,codice_viaggio,codice_utente, istante) VALUES(?,?,?,?, CURRENT_TIMESTAMP)";
         try (Connection connection = newConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
 
